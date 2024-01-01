@@ -13,4 +13,6 @@ class TrendingTvSeriesPagingSource(
 
     override suspend fun fetchItems(page: Int): List<TVShow> =
         tvShowApi.trendingTVSeries(page).items.asTVShowDomainModel()
+    override suspend fun fetchWeekItems(page: Int): List<TVShow> =
+        tvShowApi.trendingWeekTVSeries(page).items.asTVShowDomainModel()
 }

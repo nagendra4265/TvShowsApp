@@ -31,6 +31,9 @@ interface MovieService {
     @GET("3/trending/movie/day")
     suspend fun trendingMovies(@Query("page") page: Int): TMDbWrapper<NetworkMovie>
 
+    @GET("3/trending/movie/week")
+    suspend fun trendingWeekMovies(@Query("page") page: Int): TMDbWrapper<NetworkMovie>
+
     @GET("3/movie/popular")
     suspend fun popularMovies(@Query("page") page: Int): TMDbWrapper<NetworkMovie>
 

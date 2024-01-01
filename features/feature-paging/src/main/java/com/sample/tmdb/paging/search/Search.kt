@@ -89,7 +89,7 @@ fun <T : TMDbItem> Search(
     var focused by rememberSaveable { mutableStateOf(false) }
     Box(modifier = modifier.fillMaxSize()) {
         if (query.isEmpty()) {
-            InfinitelyFlowingCircles()
+            /*InfinitelyFlowingCircles()
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -97,7 +97,12 @@ fun <T : TMDbItem> Search(
                 contentAlignment = Alignment.Center
             ) {
                 AnimatedSearch()
-            }
+            }*/
+            viewModel.showResult(query)
+            PagingScreen(
+                viewModel = viewModel,
+                onClick = onClick
+            )
         } else {
             viewModel.showResult(query)
             PagingScreen(

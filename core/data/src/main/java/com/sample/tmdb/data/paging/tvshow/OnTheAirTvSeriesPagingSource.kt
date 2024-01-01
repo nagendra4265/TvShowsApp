@@ -13,4 +13,7 @@ class OnTheAirTvSeriesPagingSource(
 
     override suspend fun fetchItems(page: Int): List<TVShow> =
         tvShowApi.onTheAirTVSeries(page).items.asTVShowDomainModel()
+
+    override suspend fun fetchWeekItems(page: Int): List<TVShow> =
+        tvShowApi.trendingWeekTVSeries(page).items.asTVShowDomainModel()
 }

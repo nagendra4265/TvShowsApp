@@ -12,6 +12,12 @@ class SearchTvSeriesPagingSource(
     private val query: String
 ) : BasePagingSource<TVShow>(context) {
 
-    override suspend fun fetchItems(page: Int): List<TVShow> =
-        tvShowApi.searchTVSeries(page, query).items.asTVShowDomainModel()
+    override suspend fun fetchItems(page: Int): List<TVShow> {
+        return if(query.isNotEmpty() && query.trim().isNotEmpty())
+            tvShowApi.searchTVSeries(page, query).items.asTVShowDomainModel()
+        else fetchWeekItems(page)
+    }
+
+    override suspend fun fetchWeekItems(page: Int): List<TVShow> =
+        tvShowApi.trendingWeekTVSeries(page).items.asTVShowDomainModel()
 }

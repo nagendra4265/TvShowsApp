@@ -12,6 +12,11 @@ class SearchMoviesPagingSource(
     private val query: String
 ) : BasePagingSource<Movie>(context) {
 
-    override suspend fun fetchItems(page: Int): List<Movie> =
-        movieApi.searchMovies(page, query).items.asMovieDomainModel()
+    override suspend fun fetchItems(page: Int): List<Movie> {
+        return if(query.isNotEmpty() && query.trim().isNotEmpty())
+            movieApi.searchMovies(page, query).items.asMovieDomainModel()
+        else fetchWeekItems(page)
+    }
+    override suspend fun fetchWeekItems(page: Int): List<Movie> =
+        movieApi.trendingWeekMovies(page).items.asMovieDomainModel()
 }

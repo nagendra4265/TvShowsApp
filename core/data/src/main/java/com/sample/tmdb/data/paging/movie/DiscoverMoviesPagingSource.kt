@@ -13,4 +13,7 @@ class DiscoverMoviesPagingSource(
 
     override suspend fun fetchItems(page: Int): List<Movie> =
         movieApi.discoverMovies(page).items.asMovieDomainModel()
+
+    override suspend fun fetchWeekItems(page: Int): List<Movie> =
+        movieApi.trendingWeekMovies(page).items.asMovieDomainModel()
 }
