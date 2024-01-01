@@ -43,7 +43,6 @@ object BuildModules {
     const val DOMAIN = ":core:domain"
     const val FEATURE_FEED = ":features:feature-feed"
     const val FEATURE_BOOKMARK = ":features:feature-bookmark"
-    const val FEATURE_SETTING = ":features:feature-setting"
     const val FEATURE_PAGING = ":features:feature-paging"
     const val FEATURE_DETAIL = ":features:feature-detail"
     const val FEATURE_CREDIT = ":features:feature-credit"
