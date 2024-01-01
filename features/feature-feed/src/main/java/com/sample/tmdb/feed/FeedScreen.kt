@@ -32,7 +32,7 @@ fun MovieFeedScreen(
 @Composable
 fun TVShowFeedScreen(
     onClick: (TMDbItem) -> Unit,
-    onSearchTVShow:()->Unit,
+    onSearchTVShow: () -> Unit,
     navController: NavController,
     viewModel: TVShowFeedViewModel = hiltViewModel()
 ) {
@@ -60,9 +60,7 @@ private fun <T : TMDbItem> FeedScreen(
         Box {
             FeedCollectionList(type, navController, feeds, onClick)
             DestinationBar(
-                title = stringResource(
-                    R.string.app_title, stringResource(resourceId)
-                ), onSearchClicked = onSearchClicked
+                title = stringResource(resourceId), onSearchClicked = onSearchClicked
             )
         }
     }

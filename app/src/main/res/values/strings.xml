@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TMDb</string>
+    <string name="app_name">TV Shows</string>
     <string name="app_title">TMDb %s</string>
     <string name="movies">Movies</string>
     <string name="tv_series">TV Series</string>
