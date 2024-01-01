@@ -300,6 +300,7 @@ fun <T : TMDbItem> PagingScreen(
         is LoadState.Loading -> {
             TMDbProgressBar()
         }
+
         is LoadState.Error -> {
             val message =
                 (lazyTMDbItems.loadState.refresh as? LoadState.Error)?.error?.message ?: return
@@ -310,6 +311,7 @@ fun <T : TMDbItem> PagingScreen(
                 refresh = { lazyTMDbItems.retry() }
             )
         }
+
         else -> {
             LazyTMDbItemGrid(lazyTMDbItems, onClick)
         }
@@ -369,6 +371,7 @@ private fun <T : TMDbItem> LazyTMDbItemGrid(
                         LoadingRow(modifier = Modifier.padding(vertical = Dimens.PaddingMedium))
                     }
                 }
+
                 is LoadState.Error -> {
                     val message =
                         (lazyTMDbItems.loadState.append as? LoadState.Error)?.error?.message
@@ -383,6 +386,7 @@ private fun <T : TMDbItem> LazyTMDbItemGrid(
                             refresh = { lazyTMDbItems.retry() })
                     }
                 }
+
                 else -> {}
             }
         })

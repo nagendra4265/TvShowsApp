@@ -25,9 +25,15 @@ android {
             )
         }
     }
+    buildFeatures {
+        compose = true
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.0"
     }
     kotlinOptions {
         jvmTarget = "1.8"
@@ -38,7 +44,10 @@ dependencies {
     api(project(BuildModules.COMMON))
     implementation(Deps.coroutinesCore)
     implementation(Deps.coroutinesAndroid)
+    implementation(Deps.composeMaterial)
     implementation(Deps.annotation)
+    implementation(Deps.coil)
+    implementation(Deps.iconExtended)
     implementation(Deps.composePaging)
     implementation(Deps.retrofit)
     implementation(Deps.hilt)

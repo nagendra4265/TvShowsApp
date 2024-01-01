@@ -37,11 +37,13 @@ import com.sample.tmdb.R
 import com.sample.tmdb.bookmark.BookmarkScreen
 import com.sample.tmdb.common.MainDestinations
 import com.sample.tmdb.credit.CreditScreen
+import com.sample.tmdb.credit.MovieScreen
 import com.sample.tmdb.credit.PersonScreen
 import com.sample.tmdb.detail.MovieDetailScreen
 import com.sample.tmdb.detail.TVShowDetailScreen
 import com.sample.tmdb.domain.model.Cast
 import com.sample.tmdb.domain.model.Crew
+import com.sample.tmdb.domain.model.Movie
 import com.sample.tmdb.feed.MovieFeedScreen
 import com.sample.tmdb.feed.TVShowFeedScreen
 import com.sample.tmdb.paging.AiringTodayTVShowScreen
@@ -89,6 +91,8 @@ fun TMDbApp() {
                 onAllCastSelected = appState::navigateToCastList,
                 onAllCrewSelected = appState::navigateToCrewList,
                 onCreditSelected = appState::navigateToPerson,
+                onAllMoviesSelected = appState::navigateToCrewList,
+                onMovieSelected = appState::navigateToPerson,
                 upPress = appState::upPress
             )
             moviePagingScreens(
@@ -186,6 +190,8 @@ private fun NavGraphBuilder.detailScreens(
     onAllCastSelected: (String) -> Unit,
     onAllCrewSelected: (String) -> Unit,
     onCreditSelected: (String) -> Unit,
+    onAllMoviesSelected: (String) -> Unit,
+    onMovieSelected: (String) -> Unit,
     upPress: () -> Unit
 ) {
     composable(
@@ -203,6 +209,12 @@ private fun NavGraphBuilder.detailScreens(
             )
         }, onCreditSelected = {
             onCreditSelected(it)
+        }, onAllMoviesSelected = {
+            onAllMoviesSelected(
+                Uri.encode(gson.toJson(it, object : TypeToken<List<Movie>>() {}.type))
+            )
+        }, onMovieSelected = {
+            /*onMovieSelected(it)*/
         })
     }
     composable(
@@ -220,6 +232,12 @@ private fun NavGraphBuilder.detailScreens(
             )
         }, onCreditSelected = {
             onCreditSelected(it)
+        }, onAllMoviesSelected = {
+            onAllMoviesSelected(
+                Uri.encode(gson.toJson(it, object : TypeToken<List<Movie>>() {}.type))
+            )
+        }, onMovieSelected = {
+            onMovieSelected(it)
         })
     }
 }
@@ -333,6 +351,12 @@ private fun NavGraphBuilder.searchScreens(
     composable(route = MainDestinations.TMDB_SEARCH_TV_SHOW_ROUTE) {
         SearchTVSeriesScreen(onClick = { onTVShowSelected(it.id) }, upPress = upPress)
     }
+    composable(route = MainDestinations.TMDB_SIMILAR_MOVIES_ROUTE) {
+        SearchMoviesScreen(onClick = { onMovieSelected(it.id) }, upPress = upPress)
+    }
+    composable(route = MainDestinations.TMDB_SIMILAR_TV_SHOW_ROUTE) {
+        SearchTVSeriesScreen(onClick = { onTVShowSelected(it.id) }, upPress = upPress)
+    }
 }
 
 private fun NavGraphBuilder.creditScreens(
@@ -373,6 +397,42 @@ private fun NavGraphBuilder.creditScreens(
             )
         )
     }
+    composable(
+        route = "${MainDestinations.TMDB_SIMILAR_MOVIES_ROUTE}/{${MainDestinations.TMDB_CREDIT_KEY}}",
+        arguments = listOf(
+            navArgument(MainDestinations.TMDB_CREDIT_KEY) { type = NavType.StringType })
+    ) { from ->
+        MovieScreen(
+            R.string.similar,
+            onMovieSelected = {
+                onCreditSelected(it)
+            },
+            upPress,
+            gson.fromJson(
+                from.arguments?.getString(MainDestinations.TMDB_CREDIT_KEY),
+                object : TypeToken<List<Movie>>() {}.type
+            )
+        )
+    }
+    /*
+    composable(
+        route = "${MainDestinations.TMDB_SIMILAR_TV_SHOW_ROUTE}/{${MainDestinations.TMDB_CREDIT_KEY}}",
+        arguments = listOf(
+            navArgument(MainDestinations.TMDB_CREDIT_KEY) { type = NavType.StringType })
+    ) { from ->
+        CreditScreen(
+            R.string.similar_movies,
+            onCreditSelected = {
+                onCreditSelected(it)
+            },
+            upPress,
+            gson.fromJson<List<TVShow>>(
+                from.arguments?.getString(MainDestinations.TMDB_CREDIT_KEY),
+                object : TypeToken<List<TVShow>>() {}.type
+            )
+        )
+    }*/
+
 }
 
 private fun NavGraphBuilder.personScreen(

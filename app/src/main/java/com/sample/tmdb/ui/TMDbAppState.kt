@@ -85,12 +85,20 @@ class TMDbAppState(
         navController.navigate("${MainDestinations.TMDB_PERSON_ROUTE}/$id")
     }
 
+    fun navigateToSimilarMovies(id: Int) {
+        navController.navigate("${MainDestinations.TMDB_SIMILAR_MOVIES_ROUTE}/$id")
+    }
+
     fun navigateToSearchMovie() {
         navController.navigate(MainDestinations.TMDB_SEARCH_MOVIE_ROUTE)
     }
 
     fun navigateToSearchTVShow() {
         navController.navigate(MainDestinations.TMDB_SEARCH_TV_SHOW_ROUTE)
+    }
+
+    fun navigateToSimilarTVShow(id: Int) {
+        navController.navigate("${MainDestinations.TMDB_SIMILAR_TV_SHOW_ROUTE}/$id")
     }
 }
 

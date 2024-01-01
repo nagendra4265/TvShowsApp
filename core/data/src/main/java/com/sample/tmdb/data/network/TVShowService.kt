@@ -1,6 +1,7 @@
 package com.sample.tmdb.data.network
 
 import com.sample.tmdb.data.response.NetworkCreditWrapper
+import com.sample.tmdb.data.response.NetworkMovie
 import com.sample.tmdb.data.response.NetworkTVShow
 import com.sample.tmdb.data.response.TMDbWrapper
 import com.sample.tmdb.data.response.TvDetailResponse
@@ -51,6 +52,11 @@ interface TVShowService {
 
     @GET("3/tv/{tv_id}")
     suspend fun fetchTvDetail(@Path("tv_id") tvId: Int): TvDetailResponse
+    @GET("3/tv/{tv_id}/similar")
+    suspend fun fetchSimilarTvDetail(@Path("tv_id") tvId: Int): TMDbWrapper<NetworkTVShow>
+
+   /* @GET("3/movie/{movie_id}/similar")
+    suspend fun fetchSimilarMovieDetail(@Path("movie_id") movieId: Int): TMDbWrapper<NetworkMovie>*/
 
     @GET("3/search/tv")
     suspend fun searchTVSeries(

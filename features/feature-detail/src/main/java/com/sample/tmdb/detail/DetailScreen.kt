@@ -11,16 +11,55 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FabPosition
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarHalf
+import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.rounded.OpenInNew
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,13 +104,14 @@ import com.sample.tmdb.common.ui.Dimens
 import com.sample.tmdb.common.ui.component.PersonCard
 import com.sample.tmdb.common.utils.dpToPx
 import com.sample.tmdb.common.utils.toDp
+import com.sample.tmdb.detail.utils.openInChromeCustomTab
 import com.sample.tmdb.domain.model.Cast
 import com.sample.tmdb.domain.model.Crew
 import com.sample.tmdb.domain.model.Genre
 import com.sample.tmdb.domain.model.Movie
+import com.sample.tmdb.domain.model.MovieCard
 import com.sample.tmdb.domain.model.TMDbItemDetails
 import com.sample.tmdb.domain.model.TVShow
-import com.sample.tmdb.detail.utils.openInChromeCustomTab
 import com.sample.tmdb.common.R as R1
 
 @Composable
@@ -80,6 +120,8 @@ fun MovieDetailScreen(
     onAllCastSelected: (List<Cast>) -> Unit,
     onAllCrewSelected: (List<Crew>) -> Unit,
     onCreditSelected: (String) -> Unit,
+    onAllMoviesSelected: (List<Movie>) -> Unit,
+    onMovieSelected: (String) -> Unit,
     viewModel: MovieDetailViewModel = hiltViewModel()
 ) {
     DetailScreen(
@@ -88,6 +130,8 @@ fun MovieDetailScreen(
         onAllCastSelected = onAllCastSelected,
         onAllCrewSelected = onAllCrewSelected,
         onCreditSelected = onCreditSelected,
+        onAllMoviesSelected = onAllMoviesSelected,
+        onMovieSelected = onMovieSelected
     ) { details ->
         Movie(
             id = details.id,
@@ -108,6 +152,8 @@ fun TVShowDetailScreen(
     onAllCastSelected: (List<Cast>) -> Unit,
     onAllCrewSelected: (List<Crew>) -> Unit,
     onCreditSelected: (String) -> Unit,
+    onAllMoviesSelected: (List<Movie>) -> Unit,
+    onMovieSelected: (String) -> Unit,
     viewModel: TVShowDetailViewModel = hiltViewModel()
 ) {
     DetailScreen(
@@ -115,7 +161,9 @@ fun TVShowDetailScreen(
         upPress = upPress,
         onAllCastSelected = onAllCastSelected,
         onAllCrewSelected = onAllCrewSelected,
+        onAllMoviesSelected = onAllMoviesSelected,
         onCreditSelected = onCreditSelected,
+        onMovieSelected = onMovieSelected,
     ) { details ->
         TVShow(
             id = details.id,
@@ -137,6 +185,8 @@ private fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
     onAllCastSelected: (List<Cast>) -> Unit,
     onAllCrewSelected: (List<Crew>) -> Unit,
     onCreditSelected: (String) -> Unit,
+    onAllMoviesSelected: (List<Movie>) -> Unit,
+    onMovieSelected: (String) -> Unit,
     getBookmarkedItem: (T) -> E
 ) {
     DetailScreen(
@@ -145,6 +195,8 @@ private fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
         onAllCastSelected = onAllCastSelected,
         onAllCrewSelected = onAllCrewSelected,
         onCreditSelected = onCreditSelected,
+        onAllMoviesSelected = onAllMoviesSelected,
+        onMovieSelected = onMovieSelected,
         fab = { isFabVisible, isBookmark, details ->
             ToggleBookmarkFab(isBookmark = isBookmark, isVisible = isFabVisible) {
                 if (isBookmark) {
@@ -167,6 +219,8 @@ fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
     onAllCastSelected: (List<Cast>) -> Unit,
     onAllCrewSelected: (List<Crew>) -> Unit,
     onCreditSelected: (String) -> Unit,
+    onAllMoviesSelected: (List<Movie>) -> Unit,
+    onMovieSelected: (String) -> Unit,
     fab: @Composable (MutableState<Boolean>, Boolean, T) -> Unit
 ) {
     // Visibility for FAB
@@ -213,7 +267,7 @@ fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
                         .padding(contentPadding)
                 ) {
                     val (appbar, backdrop, poster, title, originalTitle, genres, specs, rateStars, tagline, overview) = createRefs()
-                    val (castSection, crewSection, space) = createRefs()
+                    val (castSection, crewSection, similarMoviesSection, space) = createRefs()
                     val startGuideline = createGuidelineFromStart(16.dp)
                     val endGuideline = createGuidelineFromEnd(16.dp)
 
@@ -346,13 +400,11 @@ fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
                         items = it.cast,
                         headerResId = R.string.cast,
                         itemContent = { item, _ ->
-                            PersonCard(
-                                item,
-                                onCreditSelected,
-                                Modifier.width(140.dp)
-                            )
+                            PersonCard(item, onCreditSelected, Modifier.width(140.dp))
                         },
                         onAllCreditSelected = onAllCastSelected,
+                        /*onSimilarMoviesSelected = onAllCastSelected,
+                        onSimilarTvShowSelected = onAllCastSelected,*/
                         modifier = Modifier.constrainAs(castSection) {
                             top.linkTo(overview.bottom, 16.dp)
                             linkTo(startGuideline, endGuideline)
@@ -362,15 +414,30 @@ fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
                         items = it.crew,
                         headerResId = R.string.crew,
                         itemContent = { item, _ ->
-                            PersonCard(
-                                item,
-                                onCreditSelected,
-                                Modifier.width(140.dp)
-                            )
+                            PersonCard(item, onCreditSelected, Modifier.width(140.dp))
                         },
                         onAllCreditSelected = onAllCrewSelected,
+                        /*onSimilarMoviesSelected = onAllCrewSelected,
+                        onSimilarTvShowSelected = onAllCrewSelected,*/
                         modifier = Modifier.constrainAs(crewSection) {
                             top.linkTo(castSection.bottom, 16.dp)
+                            linkTo(startGuideline, endGuideline)
+                        }
+                    )
+                    MovieTvShowSection(
+                        items = it.moviesTvList,
+                        headerResId = R.string.similar,
+                        itemContent = { item, _ ->
+                            MovieCard(item, onMovieSelected, Modifier.width(140.dp))
+                        },
+                        onAllMoviesSelected = onAllMoviesSelected,
+                        modifier = Modifier.constrainAs(similarMoviesSection) {
+                            top.linkTo(
+                                if (it.crew.isNotEmpty()) crewSection.bottom
+                                else if (it.cast.isNotEmpty()) castSection.bottom
+                                else overview.bottom,
+                                16.dp
+                            )
                             linkTo(startGuideline, endGuideline)
                         }
                     )
@@ -379,7 +446,12 @@ fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
                         modifier = Modifier
                             .windowInsetsBottomHeight(WindowInsets.navigationBars)
                             .constrainAs(space) {
-                                top.linkTo(crewSection.bottom)
+                                top.linkTo(
+                                    if (it.moviesTvList.isNotEmpty()) similarMoviesSection.bottom
+                                    else if (it.crew.isNotEmpty()) crewSection.bottom
+                                    else if (it.cast.isNotEmpty()) castSection.bottom
+                                    else overview.bottom
+                                )
                             }
                     )
                 }
@@ -599,6 +671,33 @@ private fun <T : Credit> CreditSection(
 }
 
 @Composable
+private fun MovieTvShowSection(
+    items: List<Movie>,
+    @StringRes headerResId: Int,
+    itemContent: @Composable (Movie, Int) -> Unit,
+    onAllMoviesSelected: (List<Movie>) -> Unit,
+    modifier: Modifier
+) {
+    if (items.isNotEmpty()) {
+        Column(modifier = modifier.fillMaxWidth()) {
+            SectionHeader1(headerResId, items, onAllMoviesSelected)
+            LazyRow(
+                modifier = Modifier.testTag(LocalContext.current.getString(headerResId)),
+                contentPadding = PaddingValues(Dimens.PaddingLarge)
+            ) {
+                items(
+                    count = items.size,
+                    itemContent = { index ->
+                        itemContent(items[index], index)
+                        Spacer(modifier = Modifier.width(Dimens.PaddingLarge))
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun <T : Credit> SectionHeader(
     @StringRes headerResId: Int,
     items: List<T>,
@@ -623,6 +722,48 @@ private fun <T : Credit> SectionHeader(
                 .clickable {
                     onAllCreditSelected.invoke(items)
                 }
+        ) {
+            Text(
+                text = stringResource(R.string.see_all, items.size),
+                color = localVibrantColor.current.value,
+                style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(end = Dimens.PaddingExtraSmall)
+            )
+            Icon(
+                Icons.Filled.ArrowForward,
+                contentDescription = stringResource(R.string.see_all),
+                tint = localVibrantColor.current.value,
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun SectionHeader1(
+    @StringRes headerResId: Int,
+    items: List<Movie>,
+    onAllMoviesSelected: (List<Movie>) -> Unit
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.PaddingLarge)
+    ) {
+        Text(
+            text = stringResource(headerResId),
+            color = localVibrantColor.current.value,
+            style = MaterialTheme.typography.body1.copy(fontWeight = FontWeight.Bold)
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(Dimens.PaddingExtraSmall)
+                /*.clickable {
+                    onAllMoviesSelected.invoke(items)
+                }*/
         ) {
             Text(
                 text = stringResource(R.string.see_all, items.size),
