@@ -1,0 +1,84 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
+    id 'kotlin-parcelize'
+}
+
+def appVersion = (new File(project.rootDir, 'version.txt')).text.trim()
+
+ext.generateVersionCode = { versionName ->
+    def (versionMajor, versionMinor, versionPatch) = versionName.tokenize(".")
+    Integer versionCode = versionMajor.toInteger() * 100000000 + versionMinor.toInteger() * 10000 + versionPatch.toInteger()
+    logger.info('Version code based on version {}: {}', versionName, versionCode)
+    return versionCode
+}
+
+android {
+    defaultConfig {
+        applicationId AppMetaData.id
+        minSdk AppMetaData.minSdkVersion
+        targetSdk AppMetaData.targetSdkVersion
+        compileSdk AppMetaData.compileSdkVersion
+        versionCode generateVersionCode(appVersion)
+        versionName appVersion
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary true
+        }
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(RELEASE_STORE_FILE)
+            storePassword RELEASE_STORE_PASSWORD
+            keyAlias RELEASE_KEY_ALIAS
+            keyPassword RELEASE_KEY_PASSWORD
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.0'
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+        freeCompilerArgs += ["-Xopt-in=kotlin.RequiresOptIn"]
+    }
+    namespace 'com.sample.tmdb'
+}
+
+dependencies {
+    implementation project(path: BuildModules.DATA)
+    implementation project(path: BuildModules.FEATURE_FEED)
+    implementation project(path: BuildModules.FEATURE_BOOKMARK)
+    implementation project(path: BuildModules.FEATURE_PAGING)
+    implementation project(path: BuildModules.FEATURE_DETAIL)
+    implementation project(path: BuildModules.FEATURE_CREDIT)
+
+    implementation Deps.material
+    implementation Deps.composeMaterial
+    implementation Deps.composeFoundation
+    implementation Deps.iconExtended
+    implementation Deps.navigationCompose
+    implementation Deps.systemUiController
+    implementation Deps.composePaging
+    implementation Deps.hilt
+    kapt Deps.hilt_compiler
+    implementation Deps.gson
+}
