@@ -1,9 +1,5 @@
 package com.sample.tmdb.data.response
 
-import com.sample.tmdb.domain.model.Genre
-import com.sample.tmdb.domain.model.MovieDetails
-import com.sample.tmdb.domain.model.SpokenLanguage
-import com.sample.tmdb.domain.model.TvDetails
 import com.sample.tmdb.common.utils.Constants.BACKDROP_PATH
 import com.sample.tmdb.common.utils.Constants.BASE_WIDTH_342_PATH
 import com.sample.tmdb.common.utils.Constants.BASE_WIDTH_780_PATH
@@ -13,9 +9,15 @@ import com.sample.tmdb.common.utils.Constants.NAME
 import com.sample.tmdb.common.utils.Constants.OVERVIEW
 import com.sample.tmdb.common.utils.Constants.POSTER_PATH
 import com.sample.tmdb.common.utils.Constants.RELEASE_DATE
+import com.sample.tmdb.common.utils.Constants.SEASONS
 import com.sample.tmdb.common.utils.Constants.TITLE
 import com.sample.tmdb.common.utils.Constants.VOTE_AVERAGE
 import com.sample.tmdb.common.utils.Constants.VOTE_COUNT
+import com.sample.tmdb.domain.model.Genre
+import com.sample.tmdb.domain.model.MovieDetails
+import com.sample.tmdb.domain.model.Seasons
+import com.sample.tmdb.domain.model.SpokenLanguage
+import com.sample.tmdb.domain.model.TvDetails
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -36,6 +38,7 @@ interface TMDbItemDetailsResponse {
     val title: String
     val voteAverage: Double
     val voteCount: Int
+    val seasons: List<SeasonsResponse>
 }
 
 @JsonClass(generateAdapter = true)
@@ -55,7 +58,8 @@ data class MovieDetailResponse(
     @Json(name = TAGLINE) override val tagline: String,
     @Json(name = TITLE) override val title: String,
     @Json(name = VOTE_AVERAGE) override val voteAverage: Double,
-    @Json(name = VOTE_COUNT) override val voteCount: Int
+    @Json(name = VOTE_COUNT) override val voteCount: Int,
+    @field:Json(name = SEASONS) override val seasons: List<SeasonsResponse> = emptyList()
 ) : TMDbItemDetailsResponse
 
 @JsonClass(generateAdapter = true)
@@ -76,7 +80,8 @@ data class TvDetailResponse(
     @Json(name = NAME) override val title: String,
     @Json(name = VOTE_AVERAGE) override val voteAverage: Double,
     @Json(name = VOTE_COUNT) override val voteCount: Int,
-    ) : TMDbItemDetailsResponse
+    @field:Json(name = SEASONS) override val seasons: List<SeasonsResponse> = emptyList()
+) : TMDbItemDetailsResponse
 
 @JsonClass(generateAdapter = true)
 data class GenreResponse(
@@ -88,6 +93,18 @@ data class GenreResponse(
 data class SpokenLanguageResponse(
     @Json(name = "iso_639_1") val iso6391: String,
     @Json(name = NAME) val name: String
+)
+
+@JsonClass(generateAdapter = true)
+data class SeasonsResponse(
+    @Json(name = "air_date") val airDate: String,
+    @Json(name = "episode_count") val episodeCount: Int,
+    @Json(name = "id") val id: Int,
+    @Json(name = "name") val name: String?,
+    @Json(name = "overview") val overview: String?,
+    @Json(name = "poster_path") val posterPath: String?,
+    @Json(name = "season_number") val seasonNumber: Int,
+    @Json(name = "vote_average") val voteAverage: Double
 )
 
 fun MovieDetailResponse.asDomainModel(): MovieDetails = MovieDetails(
@@ -103,7 +120,8 @@ fun MovieDetailResponse.asDomainModel(): MovieDetails = MovieDetails(
             it
         )
     }, releaseDate,
-    spokenLanguages.asLanguageDomainModel(), status, tagline, title, voteAverage, voteCount
+    spokenLanguages.asLanguageDomainModel(), status, tagline, title, voteAverage, voteCount,
+    seasons.asSeasonsModel()
 )
 
 fun TvDetailResponse.asDomainModel(): TvDetails = TvDetails(
@@ -132,7 +150,8 @@ fun TvDetailResponse.asDomainModel(): TvDetails = TvDetails(
     tagline,
     title,
     voteAverage,
-    voteCount
+    voteCount,
+    seasons.asSeasonsModel()
 )
 
 private fun List<GenreResponse>.asGenreDomainModel(): List<Genre> = map {
@@ -141,6 +160,13 @@ private fun List<GenreResponse>.asGenreDomainModel(): List<Genre> = map {
 
 private fun List<SpokenLanguageResponse>.asLanguageDomainModel(): List<SpokenLanguage> = map {
     SpokenLanguage(it.iso6391, it.name)
+}
+
+private fun List<SeasonsResponse>.asSeasonsModel(): List<Seasons> = map {
+    Seasons(
+        it.airDate, it.episodeCount, it.id, it.name, it.overview ?: "",
+        it.posterPath, it.seasonNumber, it.voteAverage ?: 0.00
+    )
 }
 
 private const val GENRES = "genres"

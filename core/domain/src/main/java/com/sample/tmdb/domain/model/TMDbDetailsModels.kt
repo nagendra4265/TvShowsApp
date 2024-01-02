@@ -17,6 +17,7 @@ interface TMDbItemDetails {
     val title: String
     val voteAverage: Double
     val voteCount: Int
+    val seasons: List<Seasons>
 }
 
 data class MovieDetails(
@@ -35,7 +36,8 @@ data class MovieDetails(
     override val tagline: String,
     override val title: String,
     override val voteAverage: Double,
-    override val voteCount: Int
+    override val voteCount: Int,
+    override val seasons: List<Seasons> = emptyList()
 ) : TMDbItemDetails
 
 data class TvDetails(
@@ -55,6 +57,7 @@ data class TvDetails(
     override val title: String,
     override val voteAverage: Double,
     override val voteCount: Int,
+    override val seasons: List<Seasons> = emptyList()
 ) : TMDbItemDetails
 
 data class Genre(

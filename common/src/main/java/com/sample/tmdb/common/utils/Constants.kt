@@ -13,4 +13,7 @@ object Constants {
     const val FIRST_AIR_DATE = "first_air_date"
     const val VOTE_AVERAGE = "vote_average"
     const val VOTE_COUNT = "vote_count"
+    const val NUMBER_OF_EPISODES = "number_of_episodes"
+    const val NUMBER_OF_SEASONS = "number_of_seasons"
+    const val SEASONS = "seasons"
 }
