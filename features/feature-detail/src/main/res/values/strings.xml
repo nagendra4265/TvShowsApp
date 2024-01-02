@@ -7,6 +7,8 @@
     <string name="cast">Cast</string>
     <string name="crew">Crew</string>
     <string name="similar">Similar</string>
+    <string name="seasons">Seasons &amp; Episodes Info</string>
+    <string name="seasons_episode_count">Seasons Number: (%1$d) \nEpisodes Count:(%2$d)</string>
     <string name="similar_movies">Similar Movies</string>
     <string name="similar_tv_shows">Similar TV Shows</string>
     <string name="open">Open</string>

@@ -97,14 +97,14 @@ data class SpokenLanguageResponse(
 
 @JsonClass(generateAdapter = true)
 data class SeasonsResponse(
-    @Json(name = "air_date") val airDate: String,
-    @Json(name = "episode_count") val episodeCount: Int,
-    @Json(name = "id") val id: Int,
-    @Json(name = "name") val name: String?,
-    @Json(name = "overview") val overview: String?,
-    @Json(name = "poster_path") val posterPath: String?,
-    @Json(name = "season_number") val seasonNumber: Int,
-    @Json(name = "vote_average") val voteAverage: Double
+    @Json(name = "air_date") val airDate: String? = "",
+    @Json(name = "episode_count") val episodeCount: Int? = 0,
+    @Json(name = "id") val id: Int? = 0,
+    @Json(name = "name") val name: String? = "",
+    @Json(name = "overview") val overview: String? = "",
+    @Json(name = "poster_path") val posterPath: String? = "",
+    @Json(name = "season_number") val seasonNumber: Int? = 0,
+    @Json(name = "vote_average") val voteAverage: Double? = 0.0
 )
 
 fun MovieDetailResponse.asDomainModel(): MovieDetails = MovieDetails(
@@ -164,7 +164,7 @@ private fun List<SpokenLanguageResponse>.asLanguageDomainModel(): List<SpokenLan
 
 private fun List<SeasonsResponse>.asSeasonsModel(): List<Seasons> = map {
     Seasons(
-        it.airDate, it.episodeCount, it.id, it.name, it.overview ?: "",
+        it.airDate, it.episodeCount, it.id, it.name ?: "", it.overview ?: "",
         it.posterPath, it.seasonNumber, it.voteAverage ?: 0.00
     )
 }

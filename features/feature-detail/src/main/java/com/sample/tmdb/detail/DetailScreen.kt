@@ -110,6 +110,8 @@ import com.sample.tmdb.domain.model.Crew
 import com.sample.tmdb.domain.model.Genre
 import com.sample.tmdb.domain.model.Movie
 import com.sample.tmdb.domain.model.MovieCard
+import com.sample.tmdb.domain.model.SeasonEpisodeCard
+import com.sample.tmdb.domain.model.Seasons
 import com.sample.tmdb.domain.model.TMDbItemDetails
 import com.sample.tmdb.domain.model.TVShow
 import com.sample.tmdb.common.R as R1
@@ -122,6 +124,7 @@ fun MovieDetailScreen(
     onCreditSelected: (String) -> Unit,
     onAllMoviesSelected: (List<Movie>) -> Unit,
     onMovieSelected: (String) -> Unit,
+    onAllSeasons: (List<Seasons>) -> Unit,
     viewModel: MovieDetailViewModel = hiltViewModel()
 ) {
     DetailScreen(
@@ -131,7 +134,8 @@ fun MovieDetailScreen(
         onAllCrewSelected = onAllCrewSelected,
         onCreditSelected = onCreditSelected,
         onAllMoviesSelected = onAllMoviesSelected,
-        onMovieSelected = onMovieSelected
+        onMovieSelected = onMovieSelected,
+        onAllSeasons = onAllSeasons
     ) { details ->
         Movie(
             id = details.id,
@@ -154,6 +158,7 @@ fun TVShowDetailScreen(
     onCreditSelected: (String) -> Unit,
     onAllMoviesSelected: (List<Movie>) -> Unit,
     onMovieSelected: (String) -> Unit,
+    onAllSeasons: (List<Seasons>) -> Unit,
     viewModel: TVShowDetailViewModel = hiltViewModel()
 ) {
     DetailScreen(
@@ -164,6 +169,7 @@ fun TVShowDetailScreen(
         onAllMoviesSelected = onAllMoviesSelected,
         onCreditSelected = onCreditSelected,
         onMovieSelected = onMovieSelected,
+        onAllSeasons = onAllSeasons
     ) { details ->
         TVShow(
             id = details.id,
@@ -187,6 +193,7 @@ private fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
     onCreditSelected: (String) -> Unit,
     onAllMoviesSelected: (List<Movie>) -> Unit,
     onMovieSelected: (String) -> Unit,
+    onAllSeasons: (List<Seasons>) -> Unit,
     getBookmarkedItem: (T) -> E
 ) {
     DetailScreen(
@@ -197,6 +204,7 @@ private fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
         onCreditSelected = onCreditSelected,
         onAllMoviesSelected = onAllMoviesSelected,
         onMovieSelected = onMovieSelected,
+        onAllSeasons = onAllSeasons,
         fab = { isFabVisible, isBookmark, details ->
             ToggleBookmarkFab(isBookmark = isBookmark, isVisible = isFabVisible) {
                 if (isBookmark) {
@@ -221,6 +229,7 @@ fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
     onCreditSelected: (String) -> Unit,
     onAllMoviesSelected: (List<Movie>) -> Unit,
     onMovieSelected: (String) -> Unit,
+    onAllSeasons: (List<Seasons>) -> Unit,
     fab: @Composable (MutableState<Boolean>, Boolean, T) -> Unit
 ) {
     // Visibility for FAB
@@ -267,7 +276,7 @@ fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
                         .padding(contentPadding)
                 ) {
                     val (appbar, backdrop, poster, title, originalTitle, genres, specs, rateStars, tagline, overview) = createRefs()
-                    val (castSection, crewSection, similarMoviesSection, space) = createRefs()
+                    val (castSection, crewSection, seasonsSection, similarMoviesSection, space) = createRefs()
                     val startGuideline = createGuidelineFromStart(16.dp)
                     val endGuideline = createGuidelineFromEnd(16.dp)
 
@@ -424,6 +433,23 @@ fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
                             linkTo(startGuideline, endGuideline)
                         }
                     )
+                    SeasonsEpisodesShowSection(
+                        items = it.seasonsList,
+                        headerResId = R.string.seasons,
+                        itemContent = { item, _ ->
+                            SeasonEpisodeCard(item, onMovieSelected, Modifier.width(140.dp))
+                        },
+                        onAllSeasons = onAllSeasons,
+                        modifier = Modifier.constrainAs(seasonsSection) {
+                            top.linkTo(
+                                if (it.crew.isNotEmpty()) crewSection.bottom
+                                else if (it.cast.isNotEmpty()) castSection.bottom
+                                else overview.bottom,
+                                16.dp
+                            )
+                            linkTo(startGuideline, endGuideline)
+                        }
+                    )
                     MovieTvShowSection(
                         items = it.moviesTvList,
                         headerResId = R.string.similar,
@@ -433,7 +459,8 @@ fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
                         onAllMoviesSelected = onAllMoviesSelected,
                         modifier = Modifier.constrainAs(similarMoviesSection) {
                             top.linkTo(
-                                if (it.crew.isNotEmpty()) crewSection.bottom
+                                if (it.seasonsList.isNotEmpty()) seasonsSection.bottom
+                                else if (it.crew.isNotEmpty()) crewSection.bottom
                                 else if (it.cast.isNotEmpty()) castSection.bottom
                                 else overview.bottom,
                                 16.dp
@@ -448,6 +475,7 @@ fun <T : TMDbItemDetails, E : TMDbItem> DetailScreen(
                             .constrainAs(space) {
                                 top.linkTo(
                                     if (it.moviesTvList.isNotEmpty()) similarMoviesSection.bottom
+                                    else if (it.seasonsList.isNotEmpty()) seasonsSection.bottom
                                     else if (it.crew.isNotEmpty()) crewSection.bottom
                                     else if (it.cast.isNotEmpty()) castSection.bottom
                                     else overview.bottom
@@ -698,6 +726,33 @@ private fun MovieTvShowSection(
 }
 
 @Composable
+private fun SeasonsEpisodesShowSection(
+    items: List<Seasons>,
+    @StringRes headerResId: Int,
+    itemContent: @Composable (Seasons, Int) -> Unit,
+    onAllSeasons: (List<Seasons>) -> Unit,
+    modifier: Modifier
+) {
+    if (items.isNotEmpty()) {
+        Column(modifier = modifier.fillMaxWidth()) {
+            SectionHeader2(headerResId, items, onAllSeasons)
+            LazyRow(
+                modifier = Modifier.testTag(LocalContext.current.getString(headerResId)),
+                contentPadding = PaddingValues(Dimens.PaddingLarge)
+            ) {
+                items(
+                    count = items.size,
+                    itemContent = { index ->
+                        itemContent(items[index], index)
+                        Spacer(modifier = Modifier.width(Dimens.PaddingLarge))
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun <T : Credit> SectionHeader(
     @StringRes headerResId: Int,
     items: List<T>,
@@ -738,7 +793,6 @@ private fun <T : Credit> SectionHeader(
     }
 }
 
-
 @Composable
 private fun SectionHeader1(
     @StringRes headerResId: Int,
@@ -761,9 +815,51 @@ private fun SectionHeader1(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .padding(Dimens.PaddingExtraSmall)
-                /*.clickable {
-                    onAllMoviesSelected.invoke(items)
-                }*/
+            /*.clickable {
+                onAllMoviesSelected.invoke(items)
+            }*/
+        ) {
+            Text(
+                text = stringResource(R.string.see_all, items.size),
+                color = localVibrantColor.current.value,
+                style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(end = Dimens.PaddingExtraSmall)
+            )
+            Icon(
+                Icons.Filled.ArrowForward,
+                contentDescription = stringResource(R.string.see_all),
+                tint = localVibrantColor.current.value,
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun SectionHeader2(
+    @StringRes headerResId: Int,
+    items: List<Seasons>,
+    onAllMoviesSelected: (List<Seasons>) -> Unit
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.PaddingLarge)
+    ) {
+        Text(
+            text = stringResource(headerResId),
+            color = localVibrantColor.current.value,
+            style = MaterialTheme.typography.body1.copy(fontWeight = FontWeight.Bold)
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(Dimens.PaddingExtraSmall)
+            /*.clickable {
+                onAllMoviesSelected.invoke(items)
+            }*/
         ) {
             Text(
                 text = stringResource(R.string.see_all, items.size),

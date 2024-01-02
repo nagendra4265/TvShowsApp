@@ -44,6 +44,7 @@ import com.sample.tmdb.detail.TVShowDetailScreen
 import com.sample.tmdb.domain.model.Cast
 import com.sample.tmdb.domain.model.Crew
 import com.sample.tmdb.domain.model.Movie
+import com.sample.tmdb.domain.model.Seasons
 import com.sample.tmdb.feed.MovieFeedScreen
 import com.sample.tmdb.feed.TVShowFeedScreen
 import com.sample.tmdb.paging.AiringTodayTVShowScreen
@@ -93,6 +94,7 @@ fun TMDbApp() {
                 onCreditSelected = appState::navigateToPerson,
                 onAllMoviesSelected = appState::navigateToCrewList,
                 onMovieSelected = appState::navigateToPerson,
+                onAllSeasons = appState::navigateToCrewList,
                 upPress = appState::upPress
             )
             moviePagingScreens(
@@ -192,6 +194,7 @@ private fun NavGraphBuilder.detailScreens(
     onCreditSelected: (String) -> Unit,
     onAllMoviesSelected: (String) -> Unit,
     onMovieSelected: (String) -> Unit,
+    onAllSeasons: (String) -> Unit,
     upPress: () -> Unit
 ) {
     composable(
@@ -215,6 +218,10 @@ private fun NavGraphBuilder.detailScreens(
             )
         }, onMovieSelected = {
             /*onMovieSelected(it)*/
+        }, onAllSeasons = {
+            onAllSeasons(
+                Uri.encode(gson.toJson(it, object : TypeToken<List<Seasons>>() {}.type))
+            )
         })
     }
     composable(
@@ -238,6 +245,10 @@ private fun NavGraphBuilder.detailScreens(
             )
         }, onMovieSelected = {
             onMovieSelected(it)
+        }, onAllSeasons = {
+            onAllSeasons(
+                Uri.encode(gson.toJson(it, object : TypeToken<List<Seasons>>() {}.type))
+            )
         })
     }
 }

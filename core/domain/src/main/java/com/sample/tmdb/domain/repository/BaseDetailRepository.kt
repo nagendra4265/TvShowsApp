@@ -35,6 +35,9 @@ abstract class BaseDetailRepository<T : TMDbItemDetails>(
         val creditWrapper = creditDeferred.await()
         val movies = moviesDeferred.await()
 
-        return DetailWrapper(creditWrapper.first, creditWrapper.second, details, movies)
+        return DetailWrapper(
+            creditWrapper.first, creditWrapper.second, details,
+            movies, details.seasons ?: emptyList()
+        )
     }
 }
